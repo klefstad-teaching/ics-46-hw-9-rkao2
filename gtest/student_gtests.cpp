@@ -217,7 +217,7 @@ TEST(LoadWordsTest, CorrectlyLoadsWords) {
 }
 
 
-TEST(WordLadderTest, IsAdjacentTest) {
+TEST(WordLadderTest, IsAdjacentTest) { // passed
     // Test case 1: Same length, one character difference
     EXPECT_TRUE(is_adjacent("apple", "appl"));  // Should return true
 
@@ -238,4 +238,36 @@ TEST(WordLadderTest, IsAdjacentTest) {
 
     // Test case 7: More than 1 character difference
     EXPECT_FALSE(is_adjacent("apple", "banana"));  // Should return false (more than one character difference)
+}
+
+
+TEST(PrintWordLadderTest, NonEmptyLadder) {
+    vector<string> ladder = {"awake", "aware", "ware", "were", "wee", "see", "seep", "sleep"};
+    
+    stringstream output;
+    streambuf* old_buf = cout.rdbuf(output.rdbuf());  // Redirect cout to the stringstream
+    
+    print_word_ladder(ladder);  // Call the function
+    
+    cout.rdbuf(old_buf);  // Restore original cout
+    
+    // Verify the output
+    string expected_output = "awake aware ware were wee see seep sleep \n";
+    EXPECT_EQ(output.str(), expected_output);
+}
+
+// Test 2: Check if the correct message is printed when the ladder is empty
+TEST(PrintWordLadderTest, EmptyLadder) {
+    vector<string> ladder;
+    
+    stringstream output;
+    streambuf* old_buf = cout.rdbuf(output.rdbuf());  // Redirect cout to the stringstream
+    
+    print_word_ladder(ladder);  // Call the function
+    
+    cout.rdbuf(old_buf);  // Restore original cout
+    
+    // Verify the output
+    string expected_output = "No word ladder found.\n";
+    EXPECT_EQ(output.str(), expected_output);
 }
