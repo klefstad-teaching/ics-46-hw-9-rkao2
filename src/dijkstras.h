@@ -41,6 +41,7 @@ struct Edge {
 struct Graph : public vector<vector<Edge>> {
     int numVertices=0;
 
+    Graph() = default; // Default constructor
     Graph(int vertices) : numVertices(vertices) {
         this->resize(vertices);  // Resize the adjacency list
     }

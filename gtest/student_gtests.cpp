@@ -2,7 +2,10 @@
 
 #include "dijkstras.h"
 // #include "ladder.h"
-
+#include "ladder.h"
+#include <sstream>
+#include <set>
+#include <vector>
 
 // Test case 1: Basic Graph Test
 TEST(DijkstraTest, BasicGraph) {
@@ -85,4 +88,154 @@ TEST(DijkstraTest, LargeGraph) {
     std::vector<int> distances = dijkstra_shortest_path(G, 0, previous);
 
     EXPECT_EQ(distances[999], 999);
+}
+
+
+
+// Helper function to capture output from print_word_ladder
+std::string capture_output(const std::vector<std::string>& ladder) {
+    std::ostringstream output_stream;
+    std::streambuf* original_cout = std::cout.rdbuf();  // Save the original buffer
+    std::cout.rdbuf(output_stream.rdbuf());  // Redirect std::cout to output_stream
+
+    print_word_ladder(ladder);  // This will now write to output_stream
+
+    std::cout.rdbuf(original_cout);  // Restore the original buffer
+    return output_stream.str();
+}
+
+// Helper function to test word ladder output
+void assert_word_ladder(const std::vector<std::string>& ladder, const std::string& expected_output) {
+    EXPECT_EQ(capture_output(ladder), expected_output);
+}
+
+// Test 1: Basic word ladder test with a valid sequence
+TEST(WordLadderTest, BasicWordLadder) {
+    std::set<std::string> word_list = {"awake", "aware", "ware", "were", "wee", "see", "seep", "sleep"};
+
+    std::string begin_word = "awake";
+    std::string end_word = "sleep";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "awake -> aware -> ware -> were -> wee -> see -> seep -> sleep\n");
+}
+
+// Test 2: Case with no word ladder (e.g., no transformation possible)
+TEST(WordLadderTest, NoWordLadder) {
+    std::set<std::string> word_list = {"cat", "bat", "rat", "mat"};
+    
+    std::string begin_word = "dog";
+    std::string end_word = "fish";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "No word ladder found.\n");
+}
+
+// Test 3: Case with two adjacent words
+TEST(WordLadderTest, TwoAdjacentWords) {
+    std::set<std::string> word_list = {"hit", "hot", "dot", "dog", "cog"};
+
+    std::string begin_word = "hit";
+    std::string end_word = "hot";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "hit -> hot\n");
+}
+
+// Test 4: Case with only one word in the ladder (begin == end)
+TEST(WordLadderTest, SameBeginAndEnd) {
+    std::set<std::string> word_list = {"cat", "bat", "rat", "mat"};
+
+    std::string begin_word = "cat";
+    std::string end_word = "cat";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "cat\n");
+}
+
+// Test 5: Large test case with a larger word list
+TEST(WordLadderTest, LargeWordList) {
+    std::set<std::string> word_list = {
+        "cat", "bat", "rat", "mat", "hat", "hot", "dot", "dog", "cog", "log", "fog"
+    };
+
+    std::string begin_word = "cat";
+    std::string end_word = "fog";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "cat -> bat -> rat -> mat -> hat -> hot -> dot -> dog -> log -> fog\n");
+}
+
+// Test 6: Test for a large word ladder with a longer sequence
+TEST(WordLadderTest, LongWordLadder) {
+    std::set<std::string> word_list = {"tap", "map", "mad", "pad", "bad", "bat", "rat", "mat"};
+
+    std::string begin_word = "tap";
+    std::string end_word = "mat";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "tap -> map -> mad -> pad -> bad -> bat -> rat -> mat\n");
+}
+
+// Test 7: Edge case - empty word list
+TEST(WordLadderTest, EmptyWordList) {
+    std::set<std::string> word_list = {};
+    
+    std::string begin_word = "start";
+    std::string end_word = "end";
+    
+    std::vector<std::string> ladder = generate_word_ladder(begin_word, end_word, word_list);
+    assert_word_ladder(ladder, "No word ladder found.\n");
+}
+
+
+void create_test_file(const std::string& file_name, const std::vector<std::string>& words) {
+    std::ofstream file(file_name);
+    for (const std::string& word : words) {
+        file << word << std::endl;
+    }
+}
+
+
+TEST(LoadWordsTest, CorrectlyLoadsWords) {
+    // Prepare a test file with some words
+    std::string test_file = "test_file.txt";
+    std::vector<std::string> words = {"apple", "banana", "cherry"};
+    create_test_file(test_file, words);
+
+    std::set<std::string> word_list;
+    load_words(word_list, test_file);
+
+    // Verify the set contains the correct words
+    ASSERT_EQ(word_list.size(), words.size());
+    for (const auto& word : words) {
+        ASSERT_TRUE(word_list.find(word) != word_list.end());
+    }
+
+    // Clean up test file
+    std::remove(test_file.c_str());
+}
+
+
+TEST(WordLadderTest, IsAdjacentTest) {
+    // Test case 1: Same length, one character difference
+    EXPECT_TRUE(is_adjacent("apple", "appl"));  // Should return true
+
+    // Test case 2: Same length, one character difference
+    EXPECT_TRUE(is_adjacent("appl", "apple"));  // Should return true
+
+    // Test case 3: Same length, one character difference
+    EXPECT_TRUE(is_adjacent("zoom", "zoo"));    // Should return true
+
+    // Test case 4: Same length, no character difference
+    EXPECT_FALSE(is_adjacent("hello", "hello"));  // Should return false (no difference)
+
+    // Test case 5: Different length by 1 character (insertion or deletion)
+    EXPECT_TRUE(is_adjacent("hello", "hell"));   // Should return true (insertion/deletion)
+
+    // Test case 6: One character difference and different length
+    EXPECT_FALSE(is_adjacent("hello", "helloo"));  // Should return false (difference more than one character)
+
+    // Test case 7: More than 1 character difference
+    EXPECT_FALSE(is_adjacent("apple", "banana"));  // Should return false (more than one character difference)
 }

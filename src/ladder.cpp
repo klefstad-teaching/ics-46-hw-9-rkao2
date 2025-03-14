@@ -17,20 +17,40 @@ void error(string word1, string word2, string msg){
 }
 
 bool edit_distance_within(const std::string& str1, const std::string& str2, int d){
-    if(str1.length() != str2.length()) return false;
+    // Allow for one character difference in length
+    if (abs(int(str1.length()) - int(str2.length())) > 1) return false; // More than one character difference in length is not allowed
 
     int count = 0;
-    for(size_t i = 0; i < str1.length(); i++){
-        if(str1[i] != str2[i]) count++;
-        if(count > d) return false;
-    }
-    return count <= d;
+    size_t i = 0, j = 0;
 
+    while (i < str1.length() && j < str2.length()) {
+        if (str1[i] != str2[j]) {
+            count++;
+            if (count > d) return false;
+            
+            // If lengths are different, try to align words by skipping a character
+            if (str1.length() > str2.length()) {
+                i++; // Skip one character in str1
+            } else if (str1.length() < str2.length()) {
+                j++; // Skip one character in str2
+            } else {
+                i++; // Otherwise, move both pointers
+                j++;
+            }
+        } else {
+            i++;
+            j++;
+        }
+    }
+
+    // Account for remaining characters if the strings are of different lengths
+    count += (i < str1.length()) + (j < str2.length());
+
+    return count <= d;
 }
 
 bool is_adjacent(const string& word1, const string& word2){
-    return edit_distance_within(word1, word2, 1);
-
+    return edit_distance_within(word1, word2, 1); // Words can differ by one insertion/deletion or substitution
 }
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list){
@@ -45,11 +65,24 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         ladder_queue.pop();
         string last_word = ladder.back();
 
+        cout << "current ladder: ";
+        for (const string& word : ladder) {
+            cout << word << " ";
+        }
+        cout << endl;
+
         for(const string& word : word_list){
             if(is_adjacent(last_word, word) && visited.find(word) == visited.end()){
                 visited.insert(word);
                 vector<string> new_ladder = ladder;
                 new_ladder.push_back(word);
+
+                cout << "Pushing new ladder: ";
+                for (const string& word : new_ladder) {
+                    cout << word << " ";
+                }
+                cout << endl;
+
 
                 if(word == end_word){
                     return new_ladder;
@@ -66,7 +99,7 @@ return {};
 }
 
 
-void load_words(set<string> & word_list, const string& file_name){
+void load_words(set<string> & word_list, const string& file_name){ // working?
     ifstream file(file_name);
     string word;
     while(file >> word){
@@ -81,7 +114,7 @@ void print_word_ladder(const vector<string>& ladder){
     }
     for(size_t i = 0; i < ladder.size(); i++){
         cout << ladder[i];
-        if(i != ladder.size() - 1) cout << " -> ";
+        if(i != ladder.size() - 1) cout << " "; // if it's not the end, put a space between the words
     }
     cout << endl;
 }
