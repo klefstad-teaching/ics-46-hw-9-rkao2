@@ -4,6 +4,7 @@
 // #include "ladder.h"
 #include "ladder.h"
 #include <sstream>
+#include <iostream>
 #include <set>
 #include <vector>
 
@@ -270,4 +271,76 @@ TEST(PrintWordLadderTest, EmptyLadder) {
     // Verify the output
     string expected_output = "No word ladder found.\n";
     EXPECT_EQ(output.str(), expected_output);
+}
+
+
+
+class PrintPathTest : public ::testing::Test {
+protected:
+    std::ostringstream outputBuffer;
+    std::streambuf* oldCout;  // Store old cout buffer
+
+    void SetUp() override {
+        oldCout = std::cout.rdbuf(outputBuffer.rdbuf());  // Redirect cout
+    }
+
+    void TearDown() override {
+        std::cout.rdbuf(oldCout);  // Restore cout
+    }
+};
+
+
+TEST_F(PrintPathTest, ValidPath) {
+    std::vector<int> path = {1, 3, 5, 7};  
+    int totalCost = 12;
+
+    print_path(path, totalCost);
+
+    std::string expectedOutput = "1 3 5 7 \nTotal cost is 12\n";
+    EXPECT_EQ(outputBuffer.str(), expectedOutput);  
+}
+
+
+TEST_F(PrintPathTest, SingleNodePath) {
+    std::vector<int> path = {2};  
+    int totalCost = 0;
+
+    print_path(path, totalCost);
+
+    std::string expectedOutput = "2 \nTotal cost is 0\n";
+    EXPECT_EQ(outputBuffer.str(), expectedOutput);  
+}
+
+
+TEST_F(PrintPathTest, NoPath) {
+    std::vector<int> path = {};  
+    int totalCost = -1;
+
+    print_path(path, totalCost);
+
+    std::string expectedOutput = "No path found. \n";
+    EXPECT_EQ(outputBuffer.str(), expectedOutput);  
+}
+
+TEST_F(PrintPathTest, PathFound) {
+    std::vector<int> path = {1, 2, 3, 4};  // Sample path
+    int totalCost = 8;
+
+    print_path(path, totalCost);
+
+    // Expected output
+    std::string expectedOutput = "1 2 3 4 \nTotal cost is 8\n";
+    EXPECT_EQ(outputBuffer.str(), expectedOutput);
+}
+
+// Test 2: No Path Found - Expect "No path found."
+TEST_F(PrintPathTest, NoPathFound) {
+    std::vector<int> path = {};  // Empty path indicating no path found
+    int totalCost = INT_MAX;  // Total cost should not matter in this case
+
+    print_path(path, totalCost);
+
+    // Expected output
+    std::string expectedOutput = "No path found. \n";
+    EXPECT_EQ(outputBuffer.str(), expectedOutput);
 }
